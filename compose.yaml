@@ -1,1 +1,38 @@
-#services:
+version: '3.9'
+
+services:
+  backend:
+    build: .
+    container_name: spring-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - backend-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      retries: 10
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend-net
+
+networks:
+  backend-net:
+
+volumes:
+  mysql_data:
